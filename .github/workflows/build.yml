@@ -24,15 +24,20 @@ jobs:
       run: |
         vcpkg install raylib:x64-windows
 
-    - name: 💻 ゲームのコンパイル（Makefileのパスを上書き）
+    - name: 💻 ゲームのコンパイル（環境変数でパスを強制上書き）
       run: |
-        # vcpkgがインストールしたraylibの場所（パス）を自動取得
+        # GitHub上の正しいraylibの場所を取得
         $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
         $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
 
+        # Windowsの環境変数（C_INCLUDE_PATHとLIBRARY_PATH）をセット
+        # これをすると、Makefileの記述よりも優先してこのパスを見に行ってくれます！
+        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
+        $env:LIBRARY_PATH = "$VCPKG_LIB"
+
         if (Test-Path Makefile) {
-          # Makefileの中のパス指定を無視して、GitHub上の正しいパスを無理やり上書きしてmakeを実行します
-          mingw32-make CFLAGS="-I$VCPKG_INCLUDE" LDFLAGS="-L$VCPKG_LIB"
+          # Makefileを実行（環境変数が効いているのでraylib.hが見つかります）
+          mingw32-make
         } else {
           # Makefileがない場合の直接コンパイル
           gcc pingpong_main.c action.c -I$VCPKG_INCLUDE -L$VCPKG_LIB -lraylib -lopengl32 -lgdi32 -lwinmm -o PingPong.exe
@@ -44,7 +49,6 @@ jobs:
           iscc setup.iss
         } else {
           # 成果物（Exeや音楽ファイル）を自動でZipにまとめます
-          # もし他にも必要なファイル（.hなどではなくゲーム実行に必要なもの）があればここに追加してください
           Compress-Archive -Path PingPong.exe, bgm.mp3, gameover.mp3 -DestinationPath PingPong_Game.zip
         }
 
