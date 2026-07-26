@@ -1,4 +1,4 @@
-name: Build and Release PingPong
+name: PingPongの自動ビルドとリリース
 
 on:
   push:
@@ -13,41 +13,42 @@ permissions:
 
 jobs:
   build-windows:
+    name: Windows向けビルド工程
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
+    - name: 📦 ソースコードを取得
       uses: actions/checkout@v4
 
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v2
-
-    - name: Install raylib via vcpkg
+    - name: 🛠 raylib（ライブラリ）の自動インストール
       run: |
         vcpkg install raylib:x64-windows
 
-    - name: Build Game (Makefile)
+    - name: 💻 ゲームのコンパイル（Makefileのパスを上書き）
       run: |
-        # Makefileがある場合はmakeを実行
-        # もしgccやMakeのパスが通っていない場合は、MSBuildやCmakeに書き換えることも可能です
+        # vcpkgがインストールしたraylibの場所（パス）を自動取得
+        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
+        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
+
         if (Test-Path Makefile) {
-          mingw32-make
+          # Makefileの中のパス指定を無視して、GitHub上の正しいパスを無理やり上書きしてmakeを実行します
+          mingw32-make CFLAGS="-I$VCPKG_INCLUDE" LDFLAGS="-L$VCPKG_LIB"
         } else {
-          # Makefileがない場合の直接コンパイル例
-          gcc pingpong_main.c action.c -o PingPong.exe -lraylib -lopengl32 -lgdi32 -lwinmm
+          # Makefileがない場合の直接コンパイル
+          gcc pingpong_main.c action.c -I$VCPKG_INCLUDE -L$VCPKG_LIB -lraylib -lopengl32 -lgdi32 -lwinmm -o PingPong.exe
         }
 
-    - name: Create Setup Installer (Inno Setup)
+    - name: 🗜 配布用セットアップ（またはZip）の作成
       run: |
-        # Inno Setupが標準で入っているため、issファイルがあれば自動でインストーラーを作れます
         if (Test-Path setup.iss) {
           iscc setup.iss
         } else {
-          # issファイルがない場合は、一時的にZipに固めて配布できるようにします
+          # 成果物（Exeや音楽ファイル）を自動でZipにまとめます
+          # もし他にも必要なファイル（.hなどではなくゲーム実行に必要なもの）があればここに追加してください
           Compress-Archive -Path PingPong.exe, bgm.mp3, gameover.mp3 -DestinationPath PingPong_Game.zip
         }
 
-    - name: Create GitHub Release
+    - name: 🚀 GitHubへの自動リリース（下書き作成）
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
