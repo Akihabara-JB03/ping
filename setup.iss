@@ -9,14 +9,14 @@ SolidCompression=yes
 WizardStyle=modern
 Encryption=yes
 Password=0000
-; 【改造】issファイルと同じ場所にある「License」という名前のファイルを自動で読み込みます！
-LicenseFile={scriptdir}\License
+; 【修正】相対パスで直接指定します。これで自分のPCでもGitHubでも正しく読み込めます！
+LicenseFile=License
 
 [Files]
-; 【改造】issファイルと同じ場所にある3つのzipファイルを自動でインストーラーに閉じ込めます！
-Source: "{scriptdir}\pingpong.zip";                 DestDir: "{app}"; Flags: ignoreversion
-Source: "{scriptdir}\pingpong-kyouryoku2.zip";      DestDir: "{app}"; Flags: ignoreversion
-Source: "{scriptdir}\pingpong-kyouryoku2-hard.zip"; DestDir: "{app}"; Flags: ignoreversion
+; 【修正】Filesセクションもシンプルに相対パスに直しました！
+Source: "pingpong.zip";                 DestDir: "{app}"; Flags: ignoreversion
+Source: "pingpong-kyouryoku2.zip";      DestDir: "{app}"; Flags: ignoreversion
+Source: "pingpong-kyouryoku2-hard.zip"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autodesktop}\ピンポン 通常版";      Filename: "{app}\Normal\pingpong.exe";      WorkingDir: "{app}\Normal"
