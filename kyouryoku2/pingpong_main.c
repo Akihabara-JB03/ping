@@ -34,17 +34,19 @@ int main(void) {
             SY = -SY;
         }
 
-        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY && BY <= PY + PaddH)) {
-            SX = -SX;  // 横のスピードだけを反転
-            point++;   // ポイントを1増やす（変数名はご自身のに合わせてください）
-            XP++;
-        }
-        // 2P（右パドル）の当たり判定：ボールの右端（BX + BR）がパドル（PX2）に当たったか調べる
-        if ((BX + BR >= PX2 && BX + BR <= PX2 + PaddW) && (BY >= PY2 && BY <= PY2 + PaddH)) {
-            SX = -SX;  // 横のスピードだけを反転
+        // 1P（左パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY - BR && BY <= PY + PaddH + BR)) {
+            SX = -SX;  // 横のスピードだけを反転（ガタガタ暴れて荒稼ぎできる仕様はそのまま）
             point++;   // ポイントを1増やす
             XP++;
         }
+        // 2P（右パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX + BR >= PX2 && BX + BR <= PX2 + PaddW) && (BY >= PY2 - BR && BY <= PY2 + PaddH + BR)) {
+            SX = -SX;  // 横のスピードだけを反転（ガタガタ暴れて荒稼ぎできる仕様はそのまま）
+            point++;   // ポイントを1増やす
+            XP++;
+        }
+
 
         if (XP >= LevelUpXP) {
             LevelUPBR -= 3;
