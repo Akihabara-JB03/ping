@@ -1,0 +1,60 @@
+name: Build and Release PingPong
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Install raylib via vcpkg
+      run: |
+        vcpkg install raylib:x64-windows
+
+    - name: Build Game (Makefile)
+      run: |
+        # Makefileがある場合はmakeを実行
+        # もしgccやMakeのパスが通っていない場合は、MSBuildやCmakeに書き換えることも可能です
+        if (Test-Path Makefile) {
+          mingw32-make
+        } else {
+          # Makefileがない場合の直接コンパイル例
+          gcc pingpong_main.c action.c -o PingPong.exe -lraylib -lopengl32 -lgdi32 -lwinmm
+        }
+
+    - name: Create Setup Installer (Inno Setup)
+      run: |
+        # Inno Setupが標準で入っているため、issファイルがあれば自動でインストーラーを作れます
+        if (Test-Path setup.iss) {
+          iscc setup.iss
+        } else {
+          # issファイルがない場合は、一時的にZipに固めて配布できるようにします
+          Compress-Archive -Path PingPong.exe, bgm.mp3, gameover.mp3 -DestinationPath PingPong_Game.zip
+        }
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          *.exe
+          *.zip
+        draft: true
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
