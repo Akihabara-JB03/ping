@@ -34,11 +34,13 @@ int main(void) {
         if (BX >= (800-BR)) {
             SX = -SX;
         }
-        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY && BY <= PY + PaddH)) {
-            SX = -SX;  // 横のスピードだけを反転
-            point++;   // ポイントを1増やす（変数名はご自身のに合わせてください）
+                // 1Pパドル：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY - BR && BY <= PY + PaddH + BR)) {
+            SX = -SX;  // 横のスピードだけを反転（ガタガタ暴れて荒稼ぎできる仕様はそのまま）
+            point++;   // ポイントを1増やす
             XP++;
         }
+
         if (XP >= LevelUpXP) {
             LevelUPBR -= 3;
             if (LevelUPBR <= 7) {
