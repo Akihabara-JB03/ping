@@ -10,26 +10,77 @@ permissions:
 
 jobs:
   build-windows:
-    name: Windows向けビルド工程
+    name: Windows向け自動コンパイル・リリース工程
     runs-on: windows-latest
 
     steps:
-    - name: 📦 ソースコードを取得
+    - name: 📦 mainブランチ（通常版・共通アセット）を取得
       uses: actions/checkout@v4
+      with:
+        ref: main
+        path: main-branch
 
-    - name: 🗜 配布用セットアップの作成
+    - name: 📦 masterブランチ（協力モードなど）を取得
+      uses: actions/checkout@v4
+      with:
+        ref: master
+        path: master-branch
+
+    - name: 🛠 raylib（ライブラリ）の自動インストール
       run: |
-        if (Test-Path License) {
-          # そのままでOK
-        } elseif (Test-Path LICENSE) {
-          Copy-Item -Path LICENSE -Destination License
-        } else {
-          New-Item -ItemType File -Force -Path License
-        }
+        vcpkg install raylib:x64-windows
 
-        # インストーラー（Inno Setup 6）を実行！
-        if (Test-Path setup.iss) {
-          iscc setup.iss
+    - name: 💻 1. 通常版のビルドとZip作成 (mainブランチのコードを使用)
+      run: |
+        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
+        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
+        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
+        $env:LIBRARY_PATH = "$VCPKG_LIB"
+
+        cd main-branch
+        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
+        
+        # 【修正】リポジトリの一番上の階層（setup.issと同じ階層）にZipを出します
+        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong.zip"
+        cd ..
+
+    - name: 💻 2. 協力モードのビルドとZip作成 (main/kyouryoku2のコードを使用)
+      run: |
+        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
+        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
+        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
+        $env:LIBRARY_PATH = "$VCPKG_LIB"
+
+        # main-branchの中のkyouryoku2フォルダに移動
+        cd main-branch/kyouryoku2
+        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
+        
+        # 【修正】2つ上の階層（setup.issと同じ階層）にZipを出します（../..）
+        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../../pingpong-kyouryoku2.zip"
+        # 【修正】上の階層に戻るcdも2つ分にします
+        cd ../..
+
+    - name: 💻 3. 協力ハードモードのビルドとZip作成 (masterブランチのコードを使用)
+      run: |
+        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
+        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
+        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
+        $env:LIBRARY_PATH = "$VCPKG_LIB"
+
+        # master-branchに移動
+        cd master-branch
+        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
+        
+        # 【修正】リポジトリの一番上の階層（setup.issと同じ階層）にZipを出します
+        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong-kyouryoku2-hard.zip"
+        cd ..
+
+    - name: 🗜 Inno Setupによるインストーラーの作成
+      run: |
+        if (Test-Path main-branch/License) { Copy-Item -Path main-branch/License -Destination License } else { New-Item -ItemType File -Force -Path License }
+
+        if (Test-Path main-branch/setup.iss) {
+          iscc main-branch/setup.iss
         } else {
           Write-Error "setup.iss が見つかりません！"
           exit 1
@@ -39,13 +90,11 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          Output/PingPong_Setup.exe
+          main-branch/Output/PingPong_Setup.exe
         tag_name: "latest"
         release_name: "PingPong 最新版インストーラー"
-        # 【変更】draftをfalseにすることで、下書きではなく最初から本番リリースとして公開します！
         draft: false
         prerelease: false
-        # 【追加】同じ「latest」タグに毎回ファイルを上書き（更新）する設定です
         make_latest: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
