@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
@@ -41,10 +39,12 @@ jobs:
 
     - name: 🚀 GitHubへの自動リリース（下書き作成）
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           Output/PingPong_Setup.exe
+        # タグが指定されていないプッシュの場合は、自動で「latest」という仮のリリース場所にファイルをアップロードします
+        tag_name: "latest"
+        release_name: "PingPong 最新ビルド (自動生成)"
         draft: true
         prerelease: false
       env:
