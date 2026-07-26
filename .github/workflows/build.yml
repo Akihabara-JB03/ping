@@ -31,24 +31,33 @@ jobs:
         $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
 
         # Windowsの環境変数（C_INCLUDE_PATHとLIBRARY_PATH）をセット
-        # これをすると、Makefileの記述よりも優先してこのパスを見に行ってくれます！
         $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
         $env:LIBRARY_PATH = "$VCPKG_LIB"
 
         if (Test-Path Makefile) {
-          # Makefileを実行（環境変数が効いているのでraylib.hが見つかります）
           mingw32-make
         } else {
-          # Makefileがない場合の直接コンパイル
           gcc pingpong_main.c action.c -I$VCPKG_INCLUDE -L$VCPKG_LIB -lraylib -lopengl32 -lgdi32 -lwinmm -o PingPong.exe
         }
 
     - name: 🗜 配布用セットアップ（またはZip）の作成
       run: |
         if (Test-Path setup.iss) {
+          # Inno Setupが探しているあなたのパソコンのデスクトップ用フォルダを、GitHub上にダミーで作成します！
+          # これで「ファイルが見つからない」エラーを騙して突破します。
+          New-Item -ItemType Directory -Force -Path "C:\Users\Owner\Desktop\c_edu\c\pingpong\pingpong-"
+          
+          # リポジトリに入っているライセンスファイルを、そのダミーフォルダにコピーします
+          if (Test-Path License) {
+            Copy-Item -Path License -Destination "C:\Users\Owner\Desktop\c_edu\c\pingpong\pingpong-\License"
+          } else {
+            # もしLicenseファイルの名前が違ってもエラーにならないように、空のファイルを作っておきます
+            New-Item -ItemType File -Force -Path "C:\Users\Owner\Desktop\c_edu\c\pingpong\pingpong-\License"
+          }
+
+          # インストーラー（Inno Setup 6）を実行！
           iscc setup.iss
         } else {
-          # 成果物（Exeや音楽ファイル）を自動でZipにまとめます
           Compress-Archive -Path PingPong.exe, bgm.mp3, gameover.mp3 -DestinationPath PingPong_Game.zip
         }
 
@@ -57,7 +66,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          *.exe
+          Output/*.exe
           *.zip
         draft: true
         prerelease: false
