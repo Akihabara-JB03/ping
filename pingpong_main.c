@@ -38,15 +38,17 @@ int main(void) {
             SY = -(((1/sqrtf(fabsf((float)SX))) * 30) + 1);
         }
 
-        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY && BY <= PY + PaddH)) {
-            SX = (((1/sqrtf(fabsf((float)SY))) * 30) + 1);;  // 横のスピードだけを反転
-            point++;   // ポイントを1増やす（変数名はご自身のに合わせてください）
+        // 1P（左パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY - BR && BY <= PY + PaddH + BR)) {
+            SX = (((1/sqrtf(fabsf((float)SY))) * 30) + 1);  // 横のスピードを反転（ガタガタ暴れる仕様はそのまま）
+            point++;   
             XP++;
         }
-        // 2P（右パドル）の当たり判定：ボールの右端（BX + BR）がパドル（PX2）に当たったか調べる
-        if ((BX + BR >= PX2 && BX + BR <= PX2 + PaddW) && (BY >= PY2 && BY <= PY2 + PaddH)) {
-            SX = -(((1/sqrtf(fabsf((float)SY))) * 30) + 1);;  // 横のスピードだけを反転
-            point++;   // ポイントを1増やす
+        
+        // 2P（右パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX + BR >= PX2 && BX + BR <= PX2 + PaddW) && (BY >= PY2 - BR && BY <= PY2 + PaddH + BR)) {
+            SX = -(((1/sqrtf(fabsf((float)SY))) * 30) + 1);  // 横のスピードを反転（ガタガタ暴れる仕様はそのまま）
+            point++;   
             XP++;
         }
 
