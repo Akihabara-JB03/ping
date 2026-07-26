@@ -19,8 +19,6 @@ jobs:
 
     - name: 🗜 配布用セットアップの作成
       run: |
-        # setup.issに「License」が必要なので、もし名前が「LICENSE」などの大文字だった場合でも
-        # エラーにならないように自動コピーしておきます
         if (Test-Path License) {
           # そのままでOK
         } elseif (Test-Path LICENSE) {
@@ -37,15 +35,17 @@ jobs:
           exit 1
         }
 
-    - name: 🚀 GitHubへの自動リリース（下書き作成）
+    - name: 🚀 GitHubへ自動リリース（本番公開）
       uses: softprops/action-gh-release@v2
       with:
         files: |
           Output/PingPong_Setup.exe
-        # タグが指定されていないプッシュの場合は、自動で「latest」という仮のリリース場所にファイルをアップロードします
         tag_name: "latest"
-        release_name: "PingPong 最新ビルド (自動生成)"
-        draft: true
+        release_name: "PingPong 最新版インストーラー"
+        # 【変更】draftをfalseにすることで、下書きではなく最初から本番リリースとして公開します！
+        draft: false
         prerelease: false
+        # 【追加】同じ「latest」タグに毎回ファイルを上書き（更新）する設定です
+        make_latest: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
