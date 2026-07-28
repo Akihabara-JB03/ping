@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PingPong (beta) - 公式紹介ページ</title>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            margin: 0;
+        }
+        h1 {
+            font-size: 3rem;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8a99ad;
+            margin-bottom: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #161f30;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .features {
+            text-align: left;
+            margin: 30px 0;
+            padding-left: 20px;
+        }
+        .features li {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-block;
+            background: #00ffcc;
+            color: #0b0f19;
+            padding: 4px 8px;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00ffcc, #0077ff);
+            color: white;
+            padding: 15px 35px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,255,204,0.4);
+            transition: 0.3s;
+            margin: 15px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,255,204,0.6);
+        }
+        .btn-github {
+            background: #24292e;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .btn-github:hover {
+            box-shadow: 0 6px 20px rgba(255,255,255,0.2);
+        }
+        footer {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #4a5768;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>PingPong <span style="font-size: 1.5rem; color: #ff0055;">beta 0.021</span></h1>
+    <p class="subtitle">2人で息を合わせろ！レベルアップで超加速する協力型ピンポンゲーム</p>
+
+    <div class="container">
+        <h2>🔥 ゲームの特徴</h2>
+        <ul class="features">
+            <li><span class="badge">通常</span> <strong>1つのボールを落とさないようにラリーを繋ぐ協力型！</strong></li>
+            <li><span class="badge">HARD</span> <strong>作者オリジナルの計算式（fabsf/sqrtf）による予測不能な魔球システム！</strong></li>
+            <li><span class="badge">一人用</span> <strong>壁当てテニス感覚でハイスコアを目指すシングルモードも搭載！</strong></li>
+            <li><span class="badge">演出</span> <strong>5分18秒の作者自作のロングオリジナルBGM収録！</strong></li>
+            <li><span class="badge">技術</span> <strong>GitHub Actionsによる自動ビルド＆Inno Setupによる安全展開！</strong></li>
+        </ul>
+
+        <p style="font-size: 1.1rem; margin-bottom: 30px;">
+            ※インストーラーの途中でパスワードを求められたら <strong>0000</strong> と入力してください。
+        </p>
+
+        <!-- 夢現へのリンクボタン -->
+        <a href="https://freegame-mugen.jp" class="btn" target="_blank">フリーゲーム夢現でダウンロード</a>
+        
+        <!-- GitHubへのリンクボタン -->
+        <a href="https://github.com" class="btn btn-github" target="_blank">GitHubでStar / Watchをする</a>
+    </div>
+
+    <footer>
+        <p>Developed by Akihabara-JB03 (Akabanestation1007)</p>
+        <p>Powered by Cloudflare Pages & GitHub Actions</p>
+    </footer>
+
+</body>
+</html>
