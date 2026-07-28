@@ -98,3 +98,9 @@ jobs:
         make_latest: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # 【追加】一番最後にこのステップを付け足します
+    - name: 🌐 webフォルダをGitHub Pagesへ自動デプロイ
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./main-branch/web  # ★ここにあなたのwebフォルダのパスを指定します！
