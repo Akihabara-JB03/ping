@@ -81,8 +81,8 @@ jobs:
           gcc pingpong_main.c action.c -lraylib -llua -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
         }
         # exe, 音楽ファイル, network.lua (およびその他必要な設定・DLL) を一括圧縮
-        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3, network.lua -DestinationPath "../../online-Pingpong.zip"
-        cd ../..
+        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3, network.lua -DestinationPath "../online-Pingpong.zip"
+        cd ..
 
     - name: 🗜 Inno Setupによるインストーラーの作成
       run: |
