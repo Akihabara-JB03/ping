@@ -14,102 +14,190 @@ jobs:
     runs-on: windows-latest
 
     steps:
+
     - name: 📦 mainブランチ（通常版・共通アセット）を取得
       uses: actions/checkout@v4
       with:
         ref: main
         path: main-branch
 
-    - name: 📦 masterブランチ（協力モードなど）を取得
+    - name: 📦 masterブランチ（協力ハード版）を取得
       uses: actions/checkout@v4
       with:
         ref: master
         path: master-branch
 
-    - name: 🛠 raylibおよびlua（ライブラリ）の自動インストール
+    - name: 🛠 raylib・luaインストール
       run: |
         vcpkg install raylib:x64-windows lua:x64-windows
 
-    - name: 💻 1. 通常版のビルドとZip作成 (mainブランチのコードを使用)
+    # =========================
+    # 通常版
+    # =========================
+    - name: 💻 1. 通常版ビルド
       run: |
-        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
-        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
-        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
-        $env:LIBRARY_PATH = "$VCPKG_LIB"
+        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
 
         cd main-branch
-        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong.zip"
-        cd ..
 
-    - name: 💻 2. 協力モードのビルドとZip作成 (main/kyouryoku2のコードを使用)
-      run: |
-        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
-        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
-        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
-        $env:LIBRARY_PATH = "$VCPKG_LIB"
-
-        cd main-branch/kyouryoku2
-        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../../pingpong-kyouryoku2.zip"
-        cd ../..
-
-    - name: 💻 3. 協力ハードモードのビルドとZip作成 (masterブランチのコードを使用)
-      run: |
-        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
-        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
-        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
-        $env:LIBRARY_PATH = "$VCPKG_LIB"
-
-        cd master-branch
-        if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong-kyouryoku2-hard.zip"
-        cd ..
-
-    # 🆕 4. オンライン版のビルドとZip作成 (main/onlineのコードを使用)
-    - name: 💻 4. オンライン版のビルドとZip作成 (main/onlineのコードを使用)
-      run: |
-        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
-        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
-        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
-        $env:LIBRARY_PATH = "$VCPKG_LIB"
-
-        cd main-branch/online
         if (Test-Path Makefile) {
           mingw32-make
         } else {
-          gcc pingpong_main.c action.c -lraylib -llua -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
+          gcc pingpong_main.c action.c `
+          -IC:/vcpkg/installed/x64-windows/include `
+          -LC:/vcpkg/installed/x64-windows/lib `
+          -lraylib -lopengl32 -lgdi32 -lwinmm `
+          -o pingpong.exe
         }
-        # exe, 音楽ファイル, network.lua (およびその他必要な設定・DLL) を一括圧縮
-        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3, network.lua -DestinationPath "../online-Pingpong.zip"
+
+        Compress-Archive `
+          -Path pingpong.exe,bgm.mp3,gameover.mp3 `
+          -DestinationPath "../pingpong.zip"
+
         cd ..
 
-    - name: 🗜 Inno Setupによるインストーラーの作成
+
+    # =========================
+    # 協力版
+    # =========================
+    - name: 💻 2. 協力モードビルド
       run: |
-        if (Test-Path main-branch/License) { Copy-Item -Path main-branch/License -Destination License } else { New-Item -ItemType File -Force -Path License }
+        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
+
+        cd main-branch/kyouryoku2
+
+        if (Test-Path Makefile) {
+          mingw32-make
+        } else {
+          gcc pingpong_main.c action.c `
+          -IC:/vcpkg/installed/x64-windows/include `
+          -LC:/vcpkg/installed/x64-windows/lib `
+          -lraylib -lopengl32 -lgdi32 -lwinmm `
+          -o pingpong.exe
+        }
+
+        Compress-Archive `
+          -Path pingpong.exe,bgm.mp3,gameover.mp3 `
+          -DestinationPath "../../pingpong-kyouryoku2.zip"
+
+        cd ../..
+
+
+    # =========================
+    # ハード協力版
+    # =========================
+    - name: 💻 3. 協力ハードモードビルド
+      run: |
+        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
+
+        cd master-branch
+
+        if (Test-Path Makefile) {
+          mingw32-make
+        } else {
+          gcc pingpong_main.c action.c `
+          -IC:/vcpkg/installed/x64-windows/include `
+          -LC:/vcpkg/installed/x64-windows/lib `
+          -lraylib -lopengl32 -lgdi32 -lwinmm `
+          -o pingpong.exe
+        }
+
+        Compress-Archive `
+          -Path pingpong.exe,bgm.mp3,gameover.mp3 `
+          -DestinationPath "../pingpong-kyouryoku2-hard.zip"
+
+        cd ..
+
+
+    # =========================
+    # オンライン版
+    # =========================
+    - name: 💻 4. オンライン版ビルド
+      run: |
+        $VCPKG_BIN = "C:/vcpkg/installed/x64-windows/bin"
+
+        $env:PATH += ";$VCPKG_BIN"
+
+        cd main-branch/online
+
+
+        if (Test-Path Makefile) {
+          mingw32-make
+        } else {
+
+          gcc pingpong_main.c action.c `
+          -IC:/vcpkg/installed/x64-windows/include `
+          -LC:/vcpkg/installed/x64-windows/lib `
+          -lraylib -llua `
+          -lopengl32 -lgdi32 -lwinmm `
+          -o pingpong.exe
+        }
+
+
+        # DLLコピー
+        Copy-Item "$VCPKG_BIN/raylib.dll" -ErrorAction SilentlyContinue
+        Copy-Item "$VCPKG_BIN/lua.dll" -ErrorAction SilentlyContinue
+
+
+        Write-Host "=== オンライン版内容確認 ==="
+        Get-ChildItem
+
+
+        Compress-Archive `
+          -Path pingpong.exe,bgm.mp3,gameover.mp3,network.lua,*.dll `
+          -DestinationPath "../online-Pingpong.zip"
+
+
+        cd ..
+
+
+    # =========================
+    # Inno Setup
+    # =========================
+    - name: 🗜 Inno Setupによるインストーラー作成
+      run: |
+
+        if (Test-Path main-branch/License) {
+          Copy-Item main-branch/License License
+        }
+        else {
+          New-Item -ItemType File -Force -Path License
+        }
+
 
         if (Test-Path main-branch/setup.iss) {
           iscc main-branch/setup.iss
-        } else {
-          Write-Error "setup.iss が見つかりません！"
+        }
+        else {
+          Write-Error "setup.iss がありません"
           exit 1
         }
 
-    - name: 🚀 GitHubへ自動リリース（本番公開）
+
+    # =========================
+    # Release
+    # =========================
+    - name: 🚀 GitHub Release公開
       uses: softprops/action-gh-release@v2
       with:
         files: |
           main-branch/Output/PingPong_Setup.exe
-        tag_name: "latest"
-        release_name: "PingPong 最新版インストーラー"
+        tag_name: latest
+        release_name: PingPong 最新版インストーラー
         draft: false
         prerelease: false
         make_latest: true
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: 🌐 webフォルダをGitHub Pagesへ自動デプロイ
+
+    # =========================
+    # Pages
+    # =========================
+    - name: 🌐 GitHub Pagesへデプロイ
       uses: peaceiris/actions-gh-pages@v4
+
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./main-branch/web
