@@ -117,7 +117,7 @@ int main(void) {
         DrawText(TextFormat("SCORE:%d/%d",point,LevelUpXP),350,20,30,WHITE);
         EndDrawing();
     }
-    
+    if (L != NULL) lua_close(L);
     UnloadMusicStream(bgm);
     CloseAudioDevice();
     return 0;
