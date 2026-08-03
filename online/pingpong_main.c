@@ -1,5 +1,37 @@
 #include "raylib.h"
 #include "action.h"
+#include <stdio.h>
+
+// 💡 Luaの機能をC言語に取り込むためのヘッダー
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+// 💡 Luaの宇宙（仮想マシン）をしまっておくグローバル変数
+lua_State *L = NULL;
+
+// 💡 Luaの初期化と部屋（くじ引き）に入る関数
+void InitLuaNetwork(const char* room_id) {
+    L = luaL_newstate();
+    luaL_openlibs(L); // Luaの標準ライブラリを有効化
+
+    // network.lua ファイルを読み込んで実行
+    if (luaL_dofile(L, "network.lua") != LUA_OK) {
+        printf("Lua読み込みエラー: %s\n", lua_tostring(L, -1));
+        lua_close(L);
+        L = NULL;
+        return;
+    }
+
+    // Luaの中の部屋番号を設定する関数を呼ぶ
+    lua_getglobal(L, "init_network_room");
+    if (lua_isfunction(L, -1)) {
+        lua_pushstring(L, room_id);
+        lua_pcall(L, 1, 0, 0);
+    } else {
+        lua_pop(L, 1);
+    }
+}
 int main(void) {
     int PX = 50;
     int PY = 250;
@@ -66,14 +98,6 @@ int main(void) {
         if (IsKeyDown(KEY_S) && (PY + PaddH) < 600) {
             PY += 20;
         }
-        if (IsKeyDown(KEY_UP) && PY2 > 0) {
-            PY2 -= 20;
-        } 
-
-        // 下キーが押されていて、かつパドルの下が画面（600）より上にある時だけ動く
-        if (IsKeyDown(KEY_DOWN) && (PY2 + PaddH) < 600) {
-            PY2 += 20;
-        }
         if (BX <= 0 || BX >= 800) {
             StopMusicStream(bgm);
             PlaySound(gameover);
@@ -84,6 +108,7 @@ int main(void) {
             UnloadMusicStream(bgm);
             UnloadSound(gameover);
             CloseAudioDevice();
+            if (L != NULL) lua_close(L);
             return 0;
         }
         DrawRectangle(PX,PY,PaddW,PaddH,WHITE);
