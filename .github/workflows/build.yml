@@ -26,9 +26,9 @@ jobs:
         ref: master
         path: master-branch
 
-    - name: 🛠 raylib（ライブラリ）の自動インストール
+    - name: 🛠 raylibおよびlua（ライブラリ）の自動インストール
       run: |
-        vcpkg install raylib:x64-windows
+        vcpkg install raylib:x64-windows lua:x64-windows
 
     - name: 💻 1. 通常版のビルドとZip作成 (mainブランチのコードを使用)
       run: |
@@ -66,6 +66,24 @@ jobs:
         Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong-kyouryoku2-hard.zip"
         cd ..
 
+    # 🆕 4. オンライン版のビルドとZip作成 (main/onlineのコードを使用)
+    - name: 💻 4. オンライン版のビルドとZip作成 (main/onlineのコードを使用)
+      run: |
+        $VCPKG_INCLUDE = "C:/vcpkg/installed/x64-windows/include"
+        $VCPKG_LIB = "C:/vcpkg/installed/x64-windows/lib"
+        $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
+        $env:LIBRARY_PATH = "$VCPKG_LIB"
+
+        cd main-branch/online
+        if (Test-Path Makefile) {
+          mingw32-make
+        } else {
+          gcc pingpong_main.c action.c -lraylib -llua -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
+        }
+        # exe, 音楽ファイル, network.lua (およびその他必要な設定・DLL) を一括圧縮
+        Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3, network.lua -DestinationPath "../../online-Pingpong.zip"
+        cd ../..
+
     - name: 🗜 Inno Setupによるインストーラーの作成
       run: |
         if (Test-Path main-branch/License) { Copy-Item -Path main-branch/License -Destination License } else { New-Item -ItemType File -Force -Path License }
@@ -94,7 +112,5 @@ jobs:
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        # 💡 チェックアウト時に `path: main-branch` で展開しているため、正確なフォルダ位置を指定します
         publish_dir: ./main-branch/web
-        # 💡 自動生成されるデプロイ先ブランチ（デフォルトは gh-pages）
         publish_branch: gh-pages
