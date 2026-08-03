@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    # 💡 割り込み防止！webフォルダやWorkflow自体の変更ではビルドを走らせないようにして、自動デプロイによる無限ループを完全にシャットアウトします
-    paths-ignore:
-      - 'web/**'
-      - '.github/workflows/**'
 
 permissions:
   contents: write
