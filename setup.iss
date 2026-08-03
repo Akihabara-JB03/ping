@@ -1,6 +1,6 @@
 [Setup]
-AppName=ピンポン [beta 0.021]
-AppVersion=beta 0.021
+AppName=ピンポン [beta 0.03]
+AppVersion=beta 0.03
 DefaultDirName={autopf}\PingPongGame
 DefaultGroupName=Ping Pong
 OutputBaseFilename=PingPong_Setup
