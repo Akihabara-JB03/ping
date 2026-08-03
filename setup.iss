@@ -17,11 +17,16 @@ LicenseFile=License
 Source: "pingpong.zip";                 DestDir: "{app}"; Flags: ignoreversion
 Source: "pingpong-kyouryoku2.zip";      DestDir: "{app}"; Flags: ignoreversion
 Source: "pingpong-kyouryoku2-hard.zip"; DestDir: "{app}"; Flags: ignoreversion
+; 🆕 Luaオンライン版のzipを追加！
+Source: "online-Pingpong.zip";          DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autodesktop}\ピンポン 通常版";      Filename: "{app}\Normal\pingpong.exe";      WorkingDir: "{app}\Normal"
-Name: "{autodesktop}\ピンポン 協力モード";  Filename: "{app}\Kyouryoku\pingpong-\pingpong.exe";  WorkingDir: "{app}\Kyouryoku\pingpong-"
-Name: "{autodesktop}\ピンポン 協力ハード";  Filename: "{app}\Hard\pingpong-\pingpong.exe";      WorkingDir: "{app}\Hard\pingpong-"
+Name: "{autodesktop}\ピンポン 通常版";     Filename: "{app}\Normal\pingpong.exe";     WorkingDir: "{app}\Normal"
+Name: "{autodesktop}\ピンポン 協力モード"; Filename: "{app}\Kyouryoku\pingpong-\pingpong.exe"; WorkingDir: "{app}\Kyouryoku\pingpong-"
+Name: "{autodesktop}\ピンポン 協力ハード"; Filename: "{app}\Hard\pingpong-\pingpong.exe";     WorkingDir: "{app}\Hard\pingpong-"
+; 🆕 オンライン版のショートカットを追加！
+; (※zip内のexeの相対パスに合わせて `pingpong.exe` または `pingpong-\pingpong.exe` に調整してください)
+Name: "{autodesktop}\ピンポン オンライン版"; Filename: "{app}\Online\pingpong.exe";     WorkingDir: "{app}\Online"
 
 [Code]
 // =======================================================
@@ -68,6 +73,8 @@ begin
       UnzipToSubFolder(ShellApp, AppPath, 'pingpong.zip', 'Normal');
       UnzipToSubFolder(ShellApp, AppPath, 'pingpong-kyouryoku2.zip', 'Kyouryoku');
       UnzipToSubFolder(ShellApp, AppPath, 'pingpong-kyouryoku2-hard.zip', 'Hard');
+      // 🆕 オンライン版の解凍処理を追加！
+      UnzipToSubFolder(ShellApp, AppPath, 'online-Pingpong.zip', 'Online');
 
     except
       MsgBox('zipファイルの自動展開中にエラーが発生しました。', mbError, MB_OK);
