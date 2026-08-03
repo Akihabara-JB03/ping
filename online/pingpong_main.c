@@ -29,7 +29,32 @@ void InitLuaNetwork(const char* room_id) {
         lua_pushstring(L, room_id);
         lua_pcall(L, 1, 0, 0);
     } else {
-        lua_pop(L, 1);
+        lua_pop(L, -1);
+    }
+}
+
+// 🆕 Luaにゲームの状態（速さ、位置、XPなど）を送信する関数
+void SendGameStateToLua(int bx, int by, int sx, int sy, int xp, int point) {
+    if (L == NULL) return;
+
+    // Lua側の "update_game_state" 関数を取得
+    lua_getglobal(L, "update_game_state");
+    if (lua_isfunction(L, -1)) {
+        // 引数をスタックに積む (順序に注意)
+        lua_pushinteger(L, bx);     // ボール位置 X
+        lua_pushinteger(L, by);     // ボール位置 Y
+        lua_pushinteger(L, sx);     // 速度 X
+        lua_pushinteger(L, sy);     // 速度 Y
+        lua_pushinteger(L, xp);     // XP
+        lua_pushinteger(L, point);  // スコア (point)
+
+        // 引数6個、戻り値0個で関数を実行
+        if (lua_pcall(L, 6, 0, 0) != LUA_OK) {
+            printf("Lua実行エラー (update_game_state): %s\n", lua_tostring(L, -1));
+            lua_pop(L, 1);
+        }
+    } else {
+        lua_pop(L, 1); // 関数が存在しなかった場合はスタックをクリア
     }
 }
 int main(void) {
@@ -49,6 +74,7 @@ int main(void) {
     int XP = 0;
     int LevelUpXP = 5;
     InitWindow(800,600,"Ping Pong");
+    
 
     SetTargetFPS(60);
     InitAudioDevice();
