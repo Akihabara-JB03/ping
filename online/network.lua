@@ -1,10 +1,12 @@
--- network.lua (Luaの Socket.io プラグインを使うノリ)
+-- network.lua
 local socketio = require("socketio")
-local client = socketio.connect("無料のテストサーバーのURL")
 
--- 💡 1. C言語から「部屋番号（0000など）」を受け取ってくじを引く
+-- 公式デモ用のSocket.ioサーバー
+local client = socketio.connect("https://socketio-chat-h948.onrender.com")
+
 function init_network_room(room_id)
-    client:emit("join_room", room_id)
+    -- 他人と混ざらないように、部屋名を長めのユニークな文字列にする
+    client:emit("join_room", "pingpong_game_room_secret_" .. room_id)
 end
 
 -- 💡 2. 毎フレーム、C言語から自分のY座標を貰って送り、相手のを返す
