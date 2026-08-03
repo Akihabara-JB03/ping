@@ -5,6 +5,8 @@ int main(void) {
     int PY = 250;
     int PaddW = 20;
     int PaddH = 100;
+    int PX2 = 750;
+    int PY2 = 250;
     int BX = 400;
     int BY = 300;
     int SX = 5;
@@ -31,15 +33,20 @@ int main(void) {
         if (BY <= (0 + BR) || BY >= (600-BR)) {
             SY = -SY;
         }
-        if (BX >= (800-BR)) {
-            SX = -SX;
-        }
-                // 1Pパドル：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+
+        // 1P（左パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
         if ((BX - BR <= PX + PaddW && BX - BR >= PX) && (BY >= PY - BR && BY <= PY + PaddH + BR)) {
             SX = -SX;  // 横のスピードだけを反転（ガタガタ暴れて荒稼ぎできる仕様はそのまま）
             point++;   // ポイントを1増やす
             XP++;
         }
+        // 2P（右パドル）：パドルの上下にボールの半径（BR）の分だけ判定を広げて、すり抜けをブロック！
+        if ((BX + BR >= PX2 && BX + BR <= PX2 + PaddW) && (BY >= PY2 - BR && BY <= PY2 + PaddH + BR)) {
+            SX = -SX;  // 横のスピードだけを反転（ガタガタ暴れて荒稼ぎできる仕様はそのまま）
+            point++;   // ポイントを1増やす
+            XP++;
+        }
+
 
         if (XP >= LevelUpXP) {
             LevelUPBR -= 3;
@@ -51,15 +58,23 @@ int main(void) {
             LevelUpXP = (point * 2) + ((7 * point) / 5);
         }
         // 上キーが押されていて、かつパドルの上が画面（0）より下にある時だけ動く
-        if (IsKeyDown(KEY_UP) && PY > 0) {
+        if (IsKeyDown(KEY_W) && PY > 0) {
             PY -= 20;
         } 
 
         // 下キーが押されていて、かつパドルの下が画面（600）より上にある時だけ動く
-        if (IsKeyDown(KEY_DOWN) && (PY + PaddH) < 600) {
+        if (IsKeyDown(KEY_S) && (PY + PaddH) < 600) {
             PY += 20;
         }
-        if (BX <= 0) {
+        if (IsKeyDown(KEY_UP) && PY2 > 0) {
+            PY2 -= 20;
+        } 
+
+        // 下キーが押されていて、かつパドルの下が画面（600）より上にある時だけ動く
+        if (IsKeyDown(KEY_DOWN) && (PY2 + PaddH) < 600) {
+            PY2 += 20;
+        }
+        if (BX <= 0 || BX >= 800) {
             StopMusicStream(bgm);
             PlaySound(gameover);
             ClearBackground(BLACK);
@@ -72,6 +87,7 @@ int main(void) {
             return 0;
         }
         DrawRectangle(PX,PY,PaddW,PaddH,WHITE);
+        DrawRectangle(PX2,PY2,PaddW,PaddH,WHITE);
         DrawCircle(BX,BY,BR,WHITE);
         DrawText(TextFormat("SCORE:%d/%d",point,LevelUpXP),350,20,30,WHITE);
         EndDrawing();
