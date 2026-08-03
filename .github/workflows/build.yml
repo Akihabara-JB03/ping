@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    # 💡 割り込み防止！webフォルダやWorkflow自体の変更ではビルドを走らせないようにして、自動デプロイによる無限ループを完全にシャットアウトします
+    paths-ignore:
+      - 'web/**'
+      - '.github/workflows/**'
 
 permissions:
   contents: write
@@ -39,8 +43,6 @@ jobs:
 
         cd main-branch
         if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        
-        # 【修正】リポジトリの一番上の階層（setup.issと同じ階層）にZipを出します
         Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong.zip"
         cd ..
 
@@ -51,13 +53,9 @@ jobs:
         $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
         $env:LIBRARY_PATH = "$VCPKG_LIB"
 
-        # main-branchの中のkyouryoku2フォルダに移動
         cd main-branch/kyouryoku2
         if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        
-        # 【修正】2つ上の階層（setup.issと同じ階層）にZipを出します（../..）
         Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../../pingpong-kyouryoku2.zip"
-        # 【修正】上の階層に戻るcdも2つ分にします
         cd ../..
 
     - name: 💻 3. 協力ハードモードのビルドとZip作成 (masterブランチのコードを使用)
@@ -67,11 +65,8 @@ jobs:
         $env:C_INCLUDE_PATH = "$VCPKG_INCLUDE"
         $env:LIBRARY_PATH = "$VCPKG_LIB"
 
-        # master-branchに移動
         cd master-branch
         if (Test-Path Makefile) { mingw32-make } else { gcc pingpong_main.c action.c -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe }
-        
-        # 【修正】リポジトリの一番上の階層（setup.issと同じ階層）にZipを出します
         Compress-Archive -Path pingpong.exe, bgm.mp3, gameover.mp3 -DestinationPath "../pingpong-kyouryoku2-hard.zip"
         cd ..
 
@@ -98,9 +93,12 @@ jobs:
         make_latest: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # 【追加】一番最後にこのステップを付け足します
+
     - name: 🌐 webフォルダをGitHub Pagesへ自動デプロイ
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./main-branch/web  # ★ここにあなたのwebフォルダのパスを指定します！
+        # 💡 チェックアウト時に `path: main-branch` で展開しているため、正確なフォルダ位置を指定します
+        publish_dir: ./main-branch/web
+        # 💡 自動生成されるデプロイ先ブランチ（デフォルトは gh-pages）
+        publish_branch: gh-pages
