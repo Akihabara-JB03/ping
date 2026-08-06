@@ -26,7 +26,7 @@ Name: "{autodesktop}\ピンポン 協力モード"; Filename: "{app}\Kyouryoku\p
 Name: "{autodesktop}\ピンポン 協力ハード"; Filename: "{app}\Hard\pingpong-\pingpong.exe";     WorkingDir: "{app}\Hard\pingpong-"
 ; 🆕 オンライン版のショートカットを追加！
 ; (※zip内のexeの相対パスに合わせて `pingpong.exe` または `pingpong-\pingpong.exe` に調整してください)
-Name: "{autodesktop}\ピンポン オンライン版"; Filename: "{app}\Online\pingpong.exe";     WorkingDir: "{app}\Online"
+Name: "{autodesktop}\ピンポン オンライン版　(破損しております　申し訳ありません。今後のアップデートにご期待ください。)"; Filename: "{app}\Online\pingpong.exe";     WorkingDir: "{app}\Online"
 
 [Code]
 // =======================================================
