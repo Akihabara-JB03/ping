@@ -27,9 +27,9 @@ jobs:
         ref: master
         path: master-branch
 
-    - name: 🛠 raylib・luaインストール
+    - name: 🛠 raylibインストール
       run: |
-        vcpkg install raylib:x64-windows lua:x64-windows
+        vcpkg install raylib:x64-windows
 
     # =========================
     # 通常版
@@ -105,48 +105,6 @@ jobs:
         Compress-Archive `
           -Path pingpong.exe,bgm.mp3,gameover.mp3 `
           -DestinationPath "../pingpong-kyouryoku2-hard.zip"
-
-        cd ..
-
-
-    # =========================
-    # オンライン版
-    # =========================
-    - name: 💻 4. オンライン版ビルド
-      run: |
-        $VCPKG_BIN = "C:/vcpkg/installed/x64-windows/bin"
-
-        $env:PATH += ";$VCPKG_BIN"
-
-        cd main-branch/online
-
-
-        if (Test-Path Makefile) {
-          mingw32-make
-        } else {
-
-          gcc pingpong_main.c action.c `
-          -IC:/vcpkg/installed/x64-windows/include `
-          -LC:/vcpkg/installed/x64-windows/lib `
-          -lraylib -llua `
-          -lopengl32 -lgdi32 -lwinmm `
-          -o pingpong.exe
-        }
-
-
-        # DLLコピー
-        Copy-Item "$VCPKG_BIN/raylib.dll" -ErrorAction SilentlyContinue
-        Copy-Item "$VCPKG_BIN/lua.dll" -ErrorAction SilentlyContinue
-
-
-        Write-Host "=== オンライン版内容確認 ==="
-        Get-ChildItem
-
-
-        Compress-Archive `
-          -Path pingpong.exe,bgm.mp3,gameover.mp3,network.lua,*.dll `
-          -DestinationPath "../online-Pingpong.zip"
-
 
         cd ..
 
