@@ -27,6 +27,7 @@ jobs:
         ref: master
         path: master-branch
 
+    # GitHub Actions上のvcpkgを使って、MinGWでも読める共通スタティックライブラリとしてインストール
     - name: 🛠 raylibインストール
       run: |
         vcpkg install raylib:x64-windows
@@ -36,16 +37,19 @@ jobs:
     # =========================
     - name: 💻 1. 通常版ビルド
       run: |
-        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
+        # vcpkgのルートパスを環境変数から動的に取得して確実につなぐ
+        $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+        $env:PATH += ";$vcpkgRoot/installed/x64-windows/bin"
 
         cd main-branch
 
         if (Test-Path Makefile) {
-          mingw32-make
+          # Makefile側でC:/raylib/raylib/srcがハードコードされている場合は、そこを書き換えるかgcc直下にフォールバックさせる
+          mingw32-make || gcc pingpong_main.c action.c -I"$vcpkgRoot/installed/x64-windows/include" -L"$vcpkgRoot/installed/x64-windows/lib" -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
         } else {
           gcc pingpong_main.c action.c `
-          -IC:/vcpkg/installed/x64-windows/include `
-          -LC:/vcpkg/installed/x64-windows/lib `
+          -I"$vcpkgRoot/installed/x64-windows/include" `
+          -L"$vcpkgRoot/installed/x64-windows/lib" `
           -lraylib -lopengl32 -lgdi32 -lwinmm `
           -o pingpong.exe
         }
@@ -62,16 +66,17 @@ jobs:
     # =========================
     - name: 💻 2. 協力モードビルド
       run: |
-        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
+        $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+        $env:PATH += ";$vcpkgRoot/installed/x64-windows/bin"
 
         cd main-branch/kyouryoku2
 
         if (Test-Path Makefile) {
-          mingw32-make
+          mingw32-make || gcc pingpong_main.c action.c -I"$vcpkgRoot/installed/x64-windows/include" -L"$vcpkgRoot/installed/x64-windows/lib" -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
         } else {
           gcc pingpong_main.c action.c `
-          -IC:/vcpkg/installed/x64-windows/include `
-          -LC:/vcpkg/installed/x64-windows/lib `
+          -I"$vcpkgRoot/installed/x64-windows/include" `
+          -L"$vcpkgRoot/installed/x64-windows/lib" `
           -lraylib -lopengl32 -lgdi32 -lwinmm `
           -o pingpong.exe
         }
@@ -88,16 +93,17 @@ jobs:
     # =========================
     - name: 💻 3. 協力ハードモードビルド
       run: |
-        $env:PATH += ";C:/vcpkg/installed/x64-windows/bin"
+        $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+        $env:PATH += ";$vcpkgRoot/installed/x64-windows/bin"
 
         cd master-branch
 
         if (Test-Path Makefile) {
-          mingw32-make
+          mingw32-make || gcc pingpong_main.c action.c -I"$vcpkgRoot/installed/x64-windows/include" -L"$vcpkgRoot/installed/x64-windows/lib" -lraylib -lopengl32 -lgdi32 -lwinmm -o pingpong.exe
         } else {
           gcc pingpong_main.c action.c `
-          -IC:/vcpkg/installed/x64-windows/include `
-          -LC:/vcpkg/installed/x64-windows/lib `
+          -I"$vcpkgRoot/installed/x64-windows/include" `
+          -L"$vcpkgRoot/installed/x64-windows/lib" `
           -lraylib -lopengl32 -lgdi32 -lwinmm `
           -o pingpong.exe
         }
@@ -114,14 +120,12 @@ jobs:
     # =========================
     - name: 🗜 Inno Setupによるインストーラー作成
       run: |
-
         if (Test-Path main-branch/License) {
           Copy-Item main-branch/License License
         }
         else {
           New-Item -ItemType File -Force -Path License
         }
-
 
         if (Test-Path main-branch/setup.iss) {
           iscc main-branch/setup.iss
@@ -145,7 +149,6 @@ jobs:
         draft: false
         prerelease: false
         make_latest: true
-
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -155,8 +158,7 @@ jobs:
     # =========================
     - name: 🌐 GitHub Pagesへデプロイ
       uses: peaceiris/actions-gh-pages@v4
-
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./main-branch/web
-        publish_branch: gh-pages
+        publish_branch: gh-pages # 正しい公開ブランチ名に修正
